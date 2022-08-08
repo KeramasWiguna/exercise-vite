@@ -1,22 +1,10 @@
-import { Button, Card, Select, Table } from "antd";
+import { Button, Card, Select, Skeleton, Table } from "antd";
 import Search from "antd/lib/input/Search";
-import { ColumnsType, TableProps } from "antd/lib/table";
-import "./App.css";
 const { Option } = Select;
-
-interface RandomUser {
-  key: React.Key;
-  username: string;
-  name: string;
-  email: string;
-  gender: string;
-  registered: string;
-}
-
-enum Gender {
-  female = "Female",
-  male = "Male",
-}
+import { ColumnsType } from "antd/lib/table";
+import { Gender, RandomUser } from "./types";
+import useApp from "./useApp";
+import "./App.css";
 
 const columns: ColumnsType<RandomUser> = [
   {
@@ -46,36 +34,20 @@ const columns: ColumnsType<RandomUser> = [
   },
 ];
 
-const data = [
-  {
-    key: 1,
-    username: "faye.valentine",
-    name: "Faye Valentine",
-    email: "faye.valentine@bebop.io",
-    gender: Gender.female,
-    registered: "17-07-2005 21:00",
-  },
-];
-
 function App() {
-  const onChange: TableProps<RandomUser>["onChange"] = (
-    pagination,
-    filters,
-    sorter,
-    extra
-  ) => {
-    console.log("params", pagination, filters, sorter, extra);
-  };
-
-  const onSearch = (value: string) => console.log(value);
-
-  const onGenderSelect = (value: string) => {
-    console.log(`selected ${value}`);
-  };
-
-  const onResetFilter = () => {
-    console.log("reset");
-  };
+  const {
+    keyword,
+    setKeyword,
+    onSearch,
+    gender,
+    onGenderSelect,
+    onResetFilter,
+    isLoading,
+    data,
+    onPaginationAndSortChange,
+    DATA_TOTAL,
+    PAGE_SIZE,
+  } = useApp();
 
   return (
     <div className="wrapper">
@@ -83,7 +55,13 @@ function App() {
         <div className="action-wrapper">
           <div>
             <label>Search</label>
-            <Search placeholder="Search" onSearch={onSearch} enterButton />
+            <Search
+              placeholder="Search"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onSearch={onSearch}
+              enterButton
+            />
           </div>
           <div
             style={{
@@ -94,7 +72,7 @@ function App() {
           >
             <label>Gender</label>
             <Select
-              defaultValue="all"
+              value={gender}
               style={{ width: 120 }}
               onChange={onGenderSelect}
             >
@@ -107,7 +85,15 @@ function App() {
             Reset Filter
           </Button>
         </div>
-        <Table columns={columns} dataSource={data} onChange={onChange} />
+        {isLoading && <Skeleton />}
+        {!isLoading && (
+          <Table
+            columns={columns}
+            dataSource={data}
+            onChange={onPaginationAndSortChange}
+            pagination={{ total: DATA_TOTAL, pageSize: PAGE_SIZE }}
+          />
+        )}
       </Card>
     </div>
   );
